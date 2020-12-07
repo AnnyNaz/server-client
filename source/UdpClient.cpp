@@ -6,7 +6,7 @@
 using namespace std;
 UDPClient::UDPClient() 
 { 
-	cout << "hello, i am client";
+	
 };
 UDPClient::UDPClient(const std::string& ip, int port)
 {

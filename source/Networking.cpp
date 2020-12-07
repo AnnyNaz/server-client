@@ -1,33 +1,43 @@
+
 #include "Networking.h"
 bool UdpBase::sendString(const std::string& text)
 {
-	try
+	boost::array<char, 1024> send_buf;
+	for (int i = 0; i < text.size() / MESSAGE_SIZE + 1; ++i)
 	{
-		socket->send_to(boost::asio::buffer(text), other_endpoint);
-		return true;
+		std::copy(text.begin() + i * MESSAGE_SIZE, text.begin() + std::min(i * MESSAGE_SIZE, int(text.size())), send_buf.data());
+		try
+		{
+			socket->send_to(boost::asio::buffer(text), other_endpoint);
+			return true;
+		}
+		catch (std::exception& e)
+		{
+			return false;
+		}
 	}
-	catch (std::exception& e)
-	{
-		//std::cerr <<"UdpBase"<< e.what() << std::endl;
-		return false;
-	}
+
+
 }
 
 std::string UdpBase::receiveString()
 {
-	std::string res;
 	try
 	{
-		boost::array<char, 128> recv_buf;
+		boost::array<char, 1024> recv_buf;
 		std::fill(recv_buf.begin(), recv_buf.end(), 0);
-		udp::endpoint sender_endpoint;
 		size_t len = socket->receive_from(
-			boost::asio::buffer(res), sender_endpoint);
+			boost::asio::buffer(recv_buf), other_endpoint);
 		return recv_buf.data();
 	}
 	catch (std::exception& e)
 	{
-		std::cerr <<"UDPClient" << e.what() << std::endl;
+		std::cerr << "UDPClient" << e.what() << std::endl;
 	}
 	return "";
+}
+UdpBase::~UdpBase()
+{
+	delete socket;
+	delete io_context;
 }
