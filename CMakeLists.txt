@@ -17,6 +17,8 @@ set(SOURCE
 	${CMAKE_SOURCE_DIR}/source/UdpClient.h
 	${CMAKE_SOURCE_DIR}/source/Networking.cpp
 	${CMAKE_SOURCE_DIR}/source/Networking.h
+	${CMAKE_SOURCE_DIR}/source/SipMethods.h
+	${CMAKE_SOURCE_DIR}/source/SipMethods.cpp
 	${CMAKE_SOURCE_DIR}/source/main.cpp)
 
 # ADD EXECUTABLE
