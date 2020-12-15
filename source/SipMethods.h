@@ -1,9 +1,13 @@
 #include <string>
 #include <unordered_map>
 enum  ESipMethod {UNKNOWN, INVITE, RINGNG, ACK, BYE, OK};
+
 class SipMessage
 {
-
+public:
+	SipMessage();
+	bool operator==(const SipMessage& rhs);
+	
 protected:
 	ESipMethod m_type;
 	std::string m_to = "";
@@ -13,7 +17,6 @@ protected:
 	std::string m_from_URI = "";
 	std::string m_from_tag = "";
 	std::string m_via = "";
-	std::string m_cseq = "";
 	std::string m_call_id = "";
 	std::string m_sequence = "";
 	std::string m_addititonal_headers = "";
@@ -21,30 +24,51 @@ protected:
 	std::string m_sdp_len = "0";
 	std::string m_sdp = "";
 	
+	static std::unordered_map<std::string, ESipMethod > m_map_string_sip_methods;
+	static std::unordered_map<ESipMethod, std::string> m_map_sipmethods_string;
+
 };
-class SipRequest: public SipMessage
-{
-public:
-	SipRequest();
-	void setType(ESipMethod m);
-	std::string toString();
-	void setUserAgent(const std::string& useragent);//??
-	void setFrom(const std::string& from);
-	void setTo(const std::string& to);
-private:
-	std::unordered_map<ESipMethod, const char*> m_map_string_sip_methods;
-};
+
 class SipResponse : public SipMessage
 {
 public:
 	SipResponse(const std::string& str);
-	void fromString(const std::string& str);
-	ESipMethod type();
-	std::string getSDP();
-	std::string sequence();
-	std::string callID();
-	std::string via();
+	bool fromString(const std::string& str);
+	ESipMethod type() const;
+	std::string getFromName() const;
+	std::string getFromURL() const;
+	std::string getFromTag() const;
+	std::string getToName() const;
+	std::string getToURL() const;
+	std::string getToTag() const;
+	std::string getVia() const;
+	std::string getSequence() const;
+	std::string getSDP() const;
+	std::string getSDPLen() const;
+	std::string getContentType() const;
+	std::string getAddititonalHeaders() const;
+	std::string getCallId() const;
 private:
-	std::unordered_map<std::string, ESipMethod > m_map_string_sip_methods;
+	bool parse(const std::string& regex_message, std::list<std::string*> vect_strings, const std::string& str);
+	bool parse_header(const std::string& str);
+};
+class SipRequest : public SipMessage
+{
+public:
+	SipRequest();
+	SipRequest operator= (const SipResponse& rhs);
+	void getfrom( const SipResponse& rhs);
+	void setType(ESipMethod m);
+	std::string toString();
+	void setUserAgent(const std::string& useragent);//??
+	void setFrom(const std::string& from_name, const std::string& from_url, const std::string& from_tag);
+	void setTo(const std::string& to_name, const std::string& to_url, const std::string& to_tag);
+	void setVia(const std::string& via);
+	void setSequence(const std::string& seq);
+	void setSDP(const std::string& sdp);
+	void setContentType(const std::string& content_type);
+	void setAddititonalHeaders(const std::string& headers);
+	void setCallId(const std::string& id);
 	
+
 };

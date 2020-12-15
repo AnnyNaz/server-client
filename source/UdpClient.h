@@ -1,4 +1,5 @@
-
+#ifndef UDPCLIENT_H
+#define UDPCLIENT_H
 #include "Networking.h"
 #include <iostream>
 
@@ -11,3 +12,4 @@ public:
 	bool sendString(const std::string& text) override;
 	std::string receiveString() override;
 };
+#endif

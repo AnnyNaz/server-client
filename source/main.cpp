@@ -3,6 +3,8 @@
 #include "UdpServer.h"
 #include "UdpClient.h"
 #include "SipMethods.h"
+#include <string>
+#include <sstream>
 const int free_port = 3205;
 void Bob()
 {
@@ -34,23 +36,70 @@ void Alice()
 void testSipMethods() 
 {
 	SipRequest request;
-	request.setFrom("bob");
-	request.setTo("alisa");
+	request.setType(INVITE);
+	request.setFrom("bob", "boburl", "bobtag");
+	request.setTo("alisa", "alisaurl", "alisatag");
+	request.setCallId("a");
+	request.setSequence("b");
 	request.setUserAgent("alisa");
-	std::cout << request.toString(); 
+	//request.setUserAgent("sdp blabla");
+	request.setSDP("sdp bla bla");
+	std::string str = request.toString();
+	SipResponse response(str);
+	std::cout << "Equal " << (SipMessage(response) == SipMessage(request)) << std::endl;
+	request.setType(OK);
+	std::string str_ok = request.toString();
+	SipResponse response_ok(str_ok);
+	std::cout << "Equal " << (SipMessage(response_ok) == SipMessage(request)) << std::endl;
 	
-	SipResponse response("SIP/2.0 UNKNOWN\nVia:\nFrom:bob<boburl>boburl\nTo:alisa<>\nCall-ID: a\nCSeq: b\nMax-Forwards: 70\n l Subject: Performance Test\n g Content-Length: 12\n\nsdp blabla");
-	std::cout << "sdp: " << response.getSDP() << "sequence " << response.sequence() << " callID()" << response.callID() << " via" << response.via() << std::endl;
 };
+std::string generateHexString(int length) 
+{
+	
+	std::stringstream ss;
+	for (int i = 0; i < length; ++i) 
+	{
+		ss<< std::hex<<((rand()%16));
+	}
+	std::string res(ss.str());
+	return res;
+
+}
 int main()
 {
-	//testSipMethods();
-	std::cout << " program started\n";
+	testSipMethods();
+	UDPServer udp(3058);
+
+	auto str = udp.receiveString();
+
+	SipResponse response_ok(str);
+	SipRequest request;
+	request.getfrom(response_ok);
+	
+
+	request.setType(OK);
+	std::cout << "\n\n\n____\n"<< request.toString()<<"\n\n\n____\n";
+	udp.sendString(request.toString());
+	while (true) 
+	{
+		str = udp.receiveString();
+		SipResponse response(str);
+		std::cout << str << "\n\n\n____\n";
+		if (response.type() == BYE)
+		{
+			udp.sendString(request.toString());
+			break;
+		}
+	}
+	//std::cout << generateHexString(6) << std::endl;
+	//std::cout << str;
+	//
+	/*std::cout << " program started\n";
 	std::thread BobThread(Bob);
 	std::thread AliceThread(Alice);
 
 	BobThread.join();
-	AliceThread.join();
+	AliceThread.join();*/
 
 	system("pause");
 
