@@ -18,6 +18,8 @@ bool UDPServer::listenFrom(int port)
 {
     io_context = new boost::asio::io_context();
     socket = new udp::socket(*io_context, udp::endpoint(udp::v4(), port));
+    udp::resolver resolver(*io_context);
+    
     boost::array<char, 0> empty_message;
     boost::system::error_code error;
     try {

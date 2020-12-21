@@ -24,7 +24,7 @@ std::string UdpBase::receiveString()
 {
 	try
 	{
-		boost::array<char, 1024> recv_buf;
+		boost::array<char, 5000> recv_buf;
 		std::fill(recv_buf.begin(), recv_buf.end(), 0);
 		size_t len = socket->receive_from(
 			boost::asio::buffer(recv_buf), other_endpoint);
