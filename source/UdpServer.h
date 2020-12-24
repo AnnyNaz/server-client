@@ -9,6 +9,5 @@ public:
 	bool listenFrom(int port);
 	bool sendString(const std::string& text) override;
 	std::string receiveString() override;
-	
 };
 #endif

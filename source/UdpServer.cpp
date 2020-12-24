@@ -22,15 +22,7 @@ bool UDPServer::listenFrom(int port)
     
     boost::array<char, 0> empty_message;
     boost::system::error_code error;
-    try {
-        socket->receive_from(boost::asio::buffer(empty_message),
-            other_endpoint, 0, error);
-    }
-    catch (std::exception& e)
-    {
-        //std::cerr << "UDPServer " << e.what() << std::endl;
-        return false;
-    }
+   
     return true;
 }
 bool UDPServer::sendString(const std::string& text)
