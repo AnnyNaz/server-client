@@ -1,0 +1,32 @@
+INVITE sip:test@192.168.0.106:5060 SIP/2.0
+Via: SIP/2.0/UDP 127.0.0.1;rport;branch=z9hG4bKPj0d27e84d8d444dcc967dc7fcc0bba262
+Max-Forwards: 70
+From: <sip:gan@127.0.0.1>;tag=a07c223573f848bfae441152f00ac738
+To: <sip:test@192.168.0.106>
+Contact: <sip:gan@192.168.0.106:58207;ob>
+Call-ID: bb0f9e73a2b84953aa8eebbc884bfb45
+CSeq: 8263 INVITE
+Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS
+Supported: replaces, 100rel, timer, norefersub
+Session-Expires: 1800
+Min-SE: 90
+User-Agent: MicroSIP/3.20.3
+Content-Type: application/sdp
+Content-Length:   343
+
+v=0
+o=- 3818317038 3818317038 IN IP4 192.168.0.106
+s=pjmedia
+b=AS:84
+t=0 0
+a=X-nat:0
+m=audio 4002 RTP/AVP 8 0 101
+c=IN IP4 192.168.0.106
+b=TIAS:64000
+a=rtcp:4003 IN IP4 192.168.0.106
+a=sendrecv
+a=rtpmap:8 PCMA/8000
+a=rtpmap:0 PCMU/8000
+a=rtpmap:101 telephone-event/8000
+a=fmtp:101 0-16
+a=ssrc:1492521541 cname:48da188672ef56db

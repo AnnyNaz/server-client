@@ -23,6 +23,8 @@ protected:
 	std::string m_content_type = "";
 	std::string m_sdp_len = "0";
 	std::string m_sdp = "";
+	std::string m_contact = "";
+
 	
 	static std::unordered_map<std::string, ESipMethod > m_map_string_sip_methods;
 	static std::unordered_map<ESipMethod, std::string> m_map_sipmethods_string;
@@ -45,6 +47,7 @@ public:
 	std::string getSequence() const;
 	std::string getSDP() const;
 	std::string getSDPLen() const;
+	std::string getContact() const;
 	std::string getContentType() const;
 	std::string getAddititonalHeaders() const;
 	std::string getCallId() const;
@@ -65,10 +68,9 @@ public:
 	void setTo(const std::string& to_name, const std::string& to_url, const std::string& to_tag);
 	void setVia(const std::string& via);
 	void setSequence(const std::string& seq);
-	void setSDP(const std::string& sdp);
+	void setSDP(const std::string& sdp, const std::string& sdp_len);
 	void setContentType(const std::string& content_type);
 	void setAddititonalHeaders(const std::string& headers);
 	void setCallId(const std::string& id);
-	
-
+	void setContact(const std::string& contact);
 };

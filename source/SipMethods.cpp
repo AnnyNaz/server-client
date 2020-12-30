@@ -20,20 +20,21 @@ void SipRequest::getfrom(const SipResponse& response)
 	setVia(response.getVia());
 	setSequence(response.getSequence());
 	setCallId(response.getCallId());
-	setSDP(response.getSDP());
-
+	setSDP(response.getSDP(), response.getSDPLen());
+	setContact(response.getContact());
+	setContentType(response.getContentType());
 }
 SipMessage::SipMessage()
 {
 	SipMessage::m_map_sipmethods_string[UNKNOWN] = "UNKNOWN";
 	SipMessage::m_map_sipmethods_string[INVITE] = "INVITE";
-	SipMessage::m_map_sipmethods_string[RINGNG] = "RINGNG";
+	SipMessage::m_map_sipmethods_string[RINGNG] = "180 Ringing";
 	SipMessage::m_map_sipmethods_string[ACK] = "ACK";
 	SipMessage::m_map_sipmethods_string[BYE] = "BYE";
 	SipMessage::m_map_sipmethods_string[OK] = "200 OK";
 	SipMessage::m_map_string_sip_methods["UNKNOWN"] = UNKNOWN;
 	SipMessage::m_map_string_sip_methods["INVITE"] = INVITE;
-	SipMessage::m_map_string_sip_methods["RINGNG"] = RINGNG;
+	SipMessage::m_map_string_sip_methods["180 Ringing"] = RINGNG;
 	SipMessage::m_map_string_sip_methods["ACK"] = ACK;
 	SipMessage::m_map_string_sip_methods["BYE"] = BYE;
 	SipMessage::m_map_string_sip_methods["200 OK"] = OK;
@@ -66,21 +67,27 @@ SipMessage::SipMessage()
 			header = "SIP\/2.0 ";
 			header =  header + SipMessage::m_map_sipmethods_string[m_type] + '\n';
 		}
-
+		
 		boost::format fmt
 			= boost::format{ "Via:%1%\n" \
+				"Max-Forwards: 70\n"\
 				"From:%2%<%3%>%4%\n" \
 				"To:%5%<%6%>%7%\n" \
-				"Call-ID:%8%\n" \
-				"CSeq:%9%\n" \
-			//   "Contact: sip:sipp@{local_ip}:{local_port}\n" \ #TODO
+				"Contact: %8%\n"
+				"Call-ID:%9%\n" \
+				"CSeq:%10%\n" \
 			
-			"%10%" \
-			
-			"Content-Length: %11%\n" \
-			"\n" \
-			"%12%"}% m_via% m_from% m_from_URI% m_from_tag% m_to% m_to_URI% m_to_tag% m_call_id% m_sequence%  m_content_type% m_sdp_len% m_sdp;
-		return header  + fmt.str();
+			"Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS\n"\
+			"Supported: replaces, 100rel, timer, norefersub\n"\
+			"Session-Expires: 1800\n"\
+			"Min-SE: 90\n"\
+			"User-Agent: MicroSIP/3.20.3\n"\
+			"Content-Type: application/sdp\n"\
+			"Content-Length: %11%\n" }% m_via% m_from% m_from_URI% m_from_tag% m_to% m_to_URI% m_to_tag% m_contact%m_call_id%   m_content_type% m_sdp_len;
+		string res = header + fmt.str();
+		
+		res = res + m_sdp;
+		return res;
 	}
 	SipResponse::SipResponse(const std::string& str)
 	{
@@ -148,7 +155,7 @@ SipMessage::SipMessage()
 			getline(sstream, line);
 			if (is_sdp)
 			{
-				m_sdp = m_sdp + line;
+				m_sdp = m_sdp + line + "\n";
 				continue;
 			}
 			list<string*> list_of_variables;
@@ -167,6 +174,11 @@ SipMessage::SipMessage()
 				list_of_variables.push_back(&m_from_URI);
 				list_of_variables.push_back(&m_from_tag);
 			}
+			else if (line.rfind("CSeq", 0) == 0)
+			{
+				regex_message = "CSeq:(.*?)\\s*";
+				list_of_variables.push_back(&m_content_type);
+			}
 			else if (line.rfind("Via", 0) == 0)
 			{
 				regex_message = "Via:(.*?)\\s*";
@@ -176,6 +188,11 @@ SipMessage::SipMessage()
 			{
 				regex_message = "CSeq:(.*?)\\s*";
 				list_of_variables.push_back(&m_sequence);
+			}
+			else if (line.rfind("Contact:", 0) == 0)
+			{
+				regex_message = "Contact:(.*?)\\s*";
+				list_of_variables.push_back(&m_contact);
 			}
 			else if (line.rfind("Call-ID", 0) == 0)
 			{
@@ -195,6 +212,7 @@ SipMessage::SipMessage()
 			if (!parse(regex_message, list_of_variables, line))
 				return false;
 		}
+		
 		return true;
 	}
 	ESipMethod SipResponse::type() const { return m_type; }
@@ -217,14 +235,18 @@ SipMessage::SipMessage()
 		m_to_tag = to_tag;
 		m_to_URI = to_url;
 	};
-	void SipRequest::setSDP(const std::string& sdp) 
+	void SipRequest::setSDP(const std::string& sdp, const std::string& sdp_len)
 	{
 		m_sdp = sdp;
-		m_sdp_len = to_string(sdp.size());
+		m_sdp_len = sdp_len;
 	} 
+	void SipRequest::setContact(const std::string& contact)
+	{
+		m_contact = contact;
+	}
 	void SipRequest::setContentType(const std::string& content_type) 
 	{
-		m_content_type = content_type.size();
+		m_content_type = content_type;
 	};
 	void SipRequest::setCallId(const std::string& id) 
 	{
@@ -245,6 +267,10 @@ SipMessage::SipMessage()
 	std::string SipResponse::getFromName() const
 	{
 		return m_from;
+	}
+	std::string SipResponse::getContact() const
+	{
+		return m_contact;
 	}
 	std::string SipResponse::getFromURL() const
 	{
@@ -270,6 +296,10 @@ SipMessage::SipMessage()
 	{
 		return m_sdp;
 	}
+	std::string SipResponse::getSDPLen() const
+	{
+		return m_sdp_len;
+	}
 	std::string SipResponse::getContentType() const
 	{
 		return m_content_type;
@@ -292,27 +322,4 @@ SipMessage::SipMessage()
 	}
 
 
-	/*
-bool res = false;
-string regex_message = "Via:(.*?)\n.*?From:(.*?)<(.*?)>(.*?)\nTo:(.*?)<(.*?)>(.*?)\n.*?Call-ID: (.*?)\nCSeq: (.*?)\n"\
-		"(.*?).*?" \
-		"Content-Length: (.*?)\n" \
-		"\n" \
-		"(.*?)";
-list<string*> vec_of_variables = { &m_via, &m_from, &m_from_URI, &m_from_tag, &m_to, &m_to_URI, &m_to_tag, &m_call_id, &m_sequence, &m_addititonal_headers, &m_sdp_len, &m_sdp };
-string type;
-if ((str.find(SipMessage::m_map_sipmethods_string[INVITE])) != string::npos || (str.find(SipMessage::m_map_sipmethods_string[ACK])) != string::npos || (str.find(SipMessage::m_map_sipmethods_string[BYE]) != string::npos))
-{
-	regex_message = "(.*?) (.*?) SIP\/2.0\n" + regex_message;
-
-	vec_of_variables.push_front(&m_to_URI);
-	vec_of_variables.push_front(&type);
-}
-else
-{
-	regex_message = "SIP\/2.0 (.*?)\n" + regex_message;
-	vec_of_variables.push_front(&type);
-}
-res =  parse(regex_message, vec_of_variables, str);
-m_type = SipMessage::m_map_string_sip_methods[type];
-return res;*/
+	

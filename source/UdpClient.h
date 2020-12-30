@@ -11,5 +11,6 @@ public:
 	bool connectTo(const std::string& ip, int port);
 	bool sendString(const std::string& text) override;
 	std::string receiveString() override;
+	~UDPClient() {};
 };
 #endif

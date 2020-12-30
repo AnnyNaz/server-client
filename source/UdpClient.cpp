@@ -14,9 +14,9 @@ UDPClient::UDPClient(const std::string& ip, int port)
 	udp::resolver resolver(*io_context);
 	udp::endpoint this_endpoint = *resolver.resolve(udp::v4(), ip, to_string(port)).begin();
 	socket = new udp::socket(*io_context);
-
 	socket->open(udp::v4());
-	
+	socket->bind(this_endpoint);
+	//
 	
 };
 
