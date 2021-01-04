@@ -9,6 +9,7 @@ public:
 	bool operator==(const SipMessage& rhs);
 	
 protected:
+	
 	ESipMethod m_type;
 	std::string m_to = "";
 	std::string m_to_URI = "";
@@ -24,6 +25,12 @@ protected:
 	std::string m_sdp_len = "0";
 	std::string m_sdp = "";
 	std::string m_contact = "";
+	std::string m_service = "7887";
+	std::string m_transport = "UDP";
+	std::string m_remote_ip = "127.0.0.1";
+	std::string m_remote_port = "5060";
+	std::string m_local_port = "5061";
+	std::string m_local_ip = "127.0.0.1";
 
 	
 	static std::unordered_map<std::string, ESipMethod > m_map_string_sip_methods;
@@ -59,6 +66,8 @@ class SipRequest : public SipMessage
 {
 public:
 	SipRequest();
+	SipRequest(const std::string& temp);
+	std::string m_template = "";
 	SipRequest operator= (const SipResponse& rhs);
 	void getfrom( const SipResponse& rhs);
 	void setType(ESipMethod m);

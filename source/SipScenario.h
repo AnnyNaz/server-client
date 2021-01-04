@@ -31,11 +31,12 @@ private:
 class SendSipRequest : public SipAction
 {
 public:
-	SendSipRequest(ESipMethod m_method);
+	SendSipRequest(const std::string& templ);
 	bool execute() override;
 private:
 	SipRequest* m_sip_request;
 	ESipMethod m_method;
+	const std::string& m_template;
 };
 class SipContext
 {

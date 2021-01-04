@@ -91,7 +91,7 @@ bool Pause::execute()
 }
 bool SendSipRequest::execute() 
 {
-	SipRequest request;
+	SipRequest request(m_template);
 	request.getfrom(m_scenario->getContext()->last_message);
 	request.setType(m_method);
 	printMessage(request.toString(), false);
@@ -103,16 +103,16 @@ SipScenario::SipScenario(UdpBase* connector)
 	m_connector = connector;
 	m_context = new SipContext();
 }
-SendSipRequest::SendSipRequest(ESipMethod method) : m_method(method)
+SendSipRequest::SendSipRequest(const string & m) : m_template(m)
 {
 }
 ReceiveSipRequest::ReceiveSipRequest(ESipMethod method) : m_method(method)
 {
 }
-string inviteMessage(string transport, int service , string from_name, string ip, int this_port, string other_ip, int other_port )
+string inviteMessage(string tem, string transport, int service , string from_name, string ip, int this_port, string other_ip, int other_port )
 {
 	int id_length = 12;
-	SipRequest invite;
+	SipRequest invite(tem);
 	string via = " SIP/2.0/" + transport + " " + ip + ":" + to_string(this_port) + ";branch=" + generateHexString(id_length);
 
 	invite.setVia(via);
@@ -139,8 +139,8 @@ a=rtpmap:101 telephone-event/8000\n\
 a=fmtp:101 0-16\n\
 a=ssrc:1492521541 cname:48da188672ef56db";
 	invite.setSDP(sdp, to_string(sdp.size()));
-	return invite.toString();
-	/*string res = "";
+	//return invite.toString();
+	string res = "";
 	string line;
 	ifstream file("C:\\Users\\hanna.nazarkevych\\source\\repos\\server\\source\\invite.txt");
 	if (file.is_open())
@@ -151,5 +151,5 @@ a=ssrc:1492521541 cname:48da188672ef56db";
 		}
 		file.close();
 	}
-	return res;*/
+	return res;
 }

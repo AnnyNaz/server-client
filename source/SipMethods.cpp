@@ -47,47 +47,41 @@ SipMessage::SipMessage()
 		res = res &&  m_sdp_len == rhs.m_sdp_len &&  m_addititonal_headers == rhs.m_addititonal_headers &&  m_content_type == rhs.m_content_type;
 		return res;
 	}
-	SipRequest::SipRequest() 
+	SipRequest::SipRequest()
 	{
 		m_type = UNKNOWN;
 	}
-	
+	SipRequest::SipRequest(const std::string& temp)
+	{
+		m_type = UNKNOWN;
+		m_template = temp;
+	}
+	std::string change(string template_str, unordered_map<string, string> m) 
+	{
+		string res = template_str;
+		for (auto it : m) 
+		{
+			res.replace(res.find(it.first), it.first.size(), it.second);
+		}
+		return res;
+	}
 	std::string SipRequest::toString()
 	{
-		string header = "";
-
-		if (m_type == INVITE || m_type == ACK || m_type == BYE)
-
-		{
-			header = SipMessage::m_map_sipmethods_string[m_type] + ' ' + (m_to_URI);
-			header = header + " SIP\/2.0\n"; 
-		}
-		else 
-		{
-			header = "SIP\/2.0 ";
-			header =  header + SipMessage::m_map_sipmethods_string[m_type] + '\n';
-		}
-		
-		boost::format fmt
-			= boost::format{ "Via:%1%\n" \
-				"Max-Forwards: 70\n"\
-				"From:%2%<%3%>%4%\n" \
-				"To:%5%<%6%>%7%\n" \
-				"Contact: %8%\n"
-				"Call-ID:%9%\n" \
-				"CSeq:%10%\n" \
+		unordered_map<string, string> map;
+		map["[service]"] = m_service;
+		map["[remote_ip]"] = m_remote_ip;
+		map["[remote_port]"] = m_remote_port;
+		map["[transport]"] = m_transport;
+		map["[local_port]"] = m_local_port;
+		map["[local_port]"] = m_local_ip;
+		map["[branch]"] = m_via;
+		map["[pid]"] = m_from_tag;
+		map["[call_number]"] = m_contact;
+		map["[call_id]"] = m_call_id;
+		map["[len]"] = m_sdp_len;
+		map["[peer_tag_param]"] = m_to_tag;
+		return change(m_template, map);
 			
-			"Allow: PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, INFO, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS\n"\
-			"Supported: replaces, 100rel, timer, norefersub\n"\
-			"Session-Expires: 1800\n"\
-			"Min-SE: 90\n"\
-			"User-Agent: MicroSIP/3.20.3\n"\
-			"Content-Type: application/sdp\n"\
-			"Content-Length: %11%\n" }% m_via% m_from% m_from_URI% m_from_tag% m_to% m_to_URI% m_to_tag% m_contact%m_call_id%   m_content_type% m_sdp_len;
-		string res = header + fmt.str();
-		
-		res = res + m_sdp;
-		return res;
 	}
 	SipResponse::SipResponse(const std::string& str)
 	{
