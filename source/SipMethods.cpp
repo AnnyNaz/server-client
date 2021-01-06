@@ -42,7 +42,7 @@ SipMessage::SipMessage()
 	bool SipMessage::operator==(const SipMessage& rhs)
 	{
 		bool res =  m_type == rhs.m_type &&  m_to == rhs.m_to &&  m_to_URI == rhs.m_to_URI &&  m_to_tag == rhs.m_to_tag;
-		res = res &&  m_from == rhs.m_from &&  m_from_URI == rhs.m_from_URI &&  m_from_tag == rhs.m_from_tag &&  m_via == rhs.m_via;
+		res = res &&  m_from == rhs.m_from &&  m_from_URI == rhs.m_from_URI &&  m_from_tag == rhs.m_from_tag &&  m_via_branch == rhs.m_via_branch;
 		res = res &&  m_call_id == rhs.m_call_id &&  m_sequence == rhs.m_sequence;
 		res = res &&  m_sdp_len == rhs.m_sdp_len &&  m_addititonal_headers == rhs.m_addititonal_headers &&  m_content_type == rhs.m_content_type;
 		return res;
@@ -56,12 +56,20 @@ SipMessage::SipMessage()
 		m_type = UNKNOWN;
 		m_template = temp;
 	}
+	std::string& replace_all_mute(std::string& s, const std::string& from, const std::string& to)
+	{
+		if (!from.empty())
+			for (std::size_t pos = 0; (pos = s.find(from, pos) + 1); pos += to.size())
+				s.replace(--pos, from.size(), to);
+		return s;
+	}
+
 	std::string change(string template_str, unordered_map<string, string> m) 
 	{
 		string res = template_str;
 		for (auto it : m) 
 		{
-			res.replace(res.find(it.first), it.first.size(), it.second);
+			replace_all_mute(res, it.first, it.second);
 		}
 		return res;
 	}
@@ -70,11 +78,12 @@ SipMessage::SipMessage()
 		unordered_map<string, string> map;
 		map["[service]"] = m_service;
 		map["[remote_ip]"] = m_remote_ip;
+		map["[local_ip]"] = m_local_ip;
 		map["[remote_port]"] = m_remote_port;
 		map["[transport]"] = m_transport;
 		map["[local_port]"] = m_local_port;
 		map["[local_port]"] = m_local_ip;
-		map["[branch]"] = m_via;
+		map["[branch]"] = m_via_branch;
 		map["[pid]"] = m_from_tag;
 		map["[call_number]"] = m_contact;
 		map["[call_id]"] = m_call_id;
@@ -176,7 +185,7 @@ SipMessage::SipMessage()
 			else if (line.rfind("Via", 0) == 0)
 			{
 				regex_message = "Via:(.*?)\\s*";
-				list_of_variables.push_back(&m_via);
+				list_of_variables.push_back(&m_via_branch);
 			}
 			else if (line.rfind("CSeq:", 0) == 0)
 			{
@@ -248,7 +257,7 @@ SipMessage::SipMessage()
 	}
 	void SipRequest::setVia(const std::string& via)
 	{
-		m_via = via;
+		m_via_branch = via;
 	}
 	void SipRequest::setSequence(const std::string& seq) 
 	{
@@ -304,7 +313,7 @@ SipMessage::SipMessage()
 	}
 	std::string SipResponse::getVia() const
 	{
-		return m_via;
+		return m_via_branch;
 	}
 	std::string SipResponse::getSequence() const
 	{
@@ -314,6 +323,11 @@ SipMessage::SipMessage()
 	{
 		return m_addititonal_headers;
 	}
-
+	void SipRequest::setService(const std::string& service) { m_service = service; }
+	void SipRequest::setTransport(const std::string& transport) { m_transport = transport; }
+	void SipRequest::setRemoteIp(const std::string& remote_ip) { m_remote_ip = remote_ip; }
+	void SipRequest::setLocalIP(const std::string& local_ip) { m_local_ip = local_ip; }
+	void SipRequest::setLocalPort(const std::string& local_port) { m_local_port = local_port; }
+	void SipRequest::setRemotePort(const std::string& remote_port) { m_remote_port = remote_port; }
 
 	

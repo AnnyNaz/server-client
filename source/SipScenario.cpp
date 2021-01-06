@@ -8,18 +8,7 @@
 #include <fstream>
 #include "utilities.cpp"
 using namespace std;
-std::string generateHexString(int length)
-{
 
-	std::stringstream ss;
-	for (int i = 0; i < length; ++i)
-	{
-		ss << std::hex << ((rand() % 16));
-	}
-	std::string res(ss.str());
-	return res;
-
-}
 void printMessage(string str, bool isIn)
 {
 	vector<string> result;
@@ -42,7 +31,7 @@ bool SipScenario::run()
 {
 	for (auto action : m_actions) 
 	{
-		if (!action->execute())
+		if (!(*action).execute())
 			return false;
 	}
 	return true;
@@ -50,7 +39,6 @@ bool SipScenario::run()
 void SipScenario::addAction(SipAction* action) 
 {
 	m_actions.push_back(action);
-	(*action).m_scenario = this;
 }
 SipContext* SipScenario::getContext()
 {
@@ -78,7 +66,6 @@ bool ReceiveSipRequest::execute()
 		SipResponse response(message);
 		type = response.type();
 	}
-	m_scenario->getContext()->last_message = message;
 	return true;
 }
 Pause::Pause(int sec):m_Sec(sec)
@@ -92,8 +79,20 @@ bool Pause::execute()
 bool SendSipRequest::execute() 
 {
 	SipRequest request(m_template);
-	request.getfrom(m_scenario->getContext()->last_message);
-	request.setType(m_method);
+	request.setFrom(m_scenario->getContext()->m_from, m_scenario->getContext()->m_from_URI, m_scenario->getContext()->m_from_tag);
+	request.setTo(m_scenario->getContext()->m_to, m_scenario->getContext()->m_to_URI, m_scenario->getContext()->m_to_tag);
+	request.setVia(m_scenario->getContext()->m_via_branch);
+	request.setSequence(m_scenario->getContext()->m_sequence);
+	request.setSDP(m_scenario->getContext()->m_sdp, m_scenario->getContext()->m_sdp_len);
+	request.setContentType(m_scenario->getContext()->m_content_type);
+	request.setCallId(m_scenario->getContext()->m_call_id);
+	request.setContact(m_scenario->getContext()->m_contact);
+	request.setService(m_scenario->getContext()->m_service);
+	request.setTransport(m_scenario->getContext()->m_transport);
+	request.setRemoteIp(m_scenario->getContext()->m_remote_ip);
+	request.setLocalIP(m_scenario->getContext()->m_local_ip);
+	request.setLocalPort(m_scenario->getContext()->m_local_port);
+	request.setRemotePort(m_scenario->getContext()->m_remote_port);
 	printMessage(request.toString(), false);
 	return m_scenario->getConnector()->sendString(request.toString());
 	
@@ -109,6 +108,7 @@ SendSipRequest::SendSipRequest(const string & m) : m_template(m)
 ReceiveSipRequest::ReceiveSipRequest(ESipMethod method) : m_method(method)
 {
 }
+/*
 string inviteMessage(string tem, string transport, int service , string from_name, string ip, int this_port, string other_ip, int other_port )
 {
 	int id_length = 12;
@@ -152,4 +152,4 @@ a=ssrc:1492521541 cname:48da188672ef56db";
 		file.close();
 	}
 	return res;
-}
+}*/

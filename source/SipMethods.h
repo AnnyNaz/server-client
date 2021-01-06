@@ -9,7 +9,6 @@ public:
 	bool operator==(const SipMessage& rhs);
 	
 protected:
-	
 	ESipMethod m_type;
 	std::string m_to = "";
 	std::string m_to_URI = "";
@@ -17,7 +16,7 @@ protected:
 	std::string m_from = "";
 	std::string m_from_URI = "";
 	std::string m_from_tag = "";
-	std::string m_via = "";
+	std::string m_via_branch = "";
 	std::string m_call_id = "";
 	std::string m_sequence = "";
 	std::string m_addititonal_headers = "";
@@ -82,4 +81,14 @@ public:
 	void setAddititonalHeaders(const std::string& headers);
 	void setCallId(const std::string& id);
 	void setContact(const std::string& contact);
+	void setService(const std::string& service);
+	void setTransport(const std::string& transport);
+	void setRemoteIp(const std::string& remote_ip);
+	void setLocalIP(const std::string& local_ip);
+	void setLocalPort(const std::string& local_port);
+	void setRemotePort(const std::string& remote_port);
+
+
+
+
 };

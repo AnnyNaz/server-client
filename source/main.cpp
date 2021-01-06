@@ -63,7 +63,19 @@ const string TRANSPORT = "UDP";
 	UACScenario.addAction(act6);
 	UACScenario.run();
 }*/
-int main()
+std::string generateHexString(int length)
+{
+
+	std::stringstream ss;
+	for (int i = 0; i < length; ++i)
+	{
+		ss << std::hex << ((rand() % 16));
+	}
+	std::string res(ss.str());
+	return res;
+
+}
+void xmlUAS() 
 {
 	string text, text1;
 	XMLDocument doc;
@@ -71,36 +83,119 @@ int main()
 	connector->connectTo(ip, other_port);
 	SipScenario UACScenario(connector);
 
-	if (doc.LoadFile("C:\\Users\\hanna.nazarkevych\\source\\repos\\server\\source\\uas.xml") != 0)
+	if (doc.LoadFile("..//uas.xml") != 0)
 	{
-		cout<<"load xml file failed";
-		return -1;
+		cout << "load xml file failed";
+		return;
 	}
 	tinyxml2::XMLElement* rootNode = doc.FirstChildElement(ROOT_NODE);
 	tinyxml2::XMLElement* node = rootNode->FirstChildElement();
-
-
+	UACScenario.m_context = new SipContext();
+	UACScenario.m_context->m_call_id = generateHexString(16);
+	UACScenario.m_context->m_from_tag = generateHexString(16);
+	UACScenario.m_context->m_via_branch = generateHexString(16);
 	while (NULL != node)
 	{
-			if (strcmp("send" , node->Name()) == 0)
-			{
-				UACScenario.addAction(new SendSipRequest(text));
-			}
-			if (strcmp("recv", node->Name()) == 0)
-			{
-			//	text = node->Attribute("response");
-				//cout << text << "recv" << endl;
-			}
+		if (strcmp("send", node->Name()) == 0)
+		{
+			//cout << node->GetText() << "recv" << endl;
+			string* str = new string(node->GetText());
+			str->erase(0, 1);
+			SendSipRequest* sendsiprequest = new SendSipRequest((*str));
 
-			if (strcmp("pause", node->Name()) == 0)
+			UACScenario.addAction(sendsiprequest);
+			cout << str;
+			sendsiprequest->m_scenario = &UACScenario;
+		}
+		if (strcmp("recv", node->Name()) == 0)
+		{
+			string response = node->Attribute("response");
+			ReceiveSipRequest* receivesiprequest = NULL;
+			if (response == "200")
+				receivesiprequest = new ReceiveSipRequest(OK);
+			else if (response == "180")
+				receivesiprequest = new ReceiveSipRequest(RINGNG);
+			if (receivesiprequest)
 			{
-				UACScenario.addAction(new Pause(12));
-				cout << "pause" << endl;
+				UACScenario.addAction(receivesiprequest);
+				receivesiprequest->m_scenario = &UACScenario;
+				cout << text << "recv" << endl;
 			}
-			node = node->NextSiblingElement();
+		}
+
+		if (strcmp("pause", node->Name()) == 0)
+		{
+			Pause* p = new Pause(12);
+			UACScenario.addAction(p);
+			cout << "pause" << endl;
+		}
+		node = node->NextSiblingElement();
 	}
 
 	UACScenario.run();
+}
+void xmlUAC()
+{
+	string text, text1;
+	XMLDocument doc;
+	UDPClient* connector = new UDPClient(ip, this_port);
+	connector->connectTo(ip, other_port);
+	SipScenario UACScenario(connector);
+
+	if (doc.LoadFile("..//uac.xml") != 0)
+	{
+		cout << "load xml file failed";
+		return;
+	}
+	tinyxml2::XMLElement* rootNode = doc.FirstChildElement(ROOT_NODE);
+	tinyxml2::XMLElement* node = rootNode->FirstChildElement();
+	UACScenario.m_context = new SipContext();
+	UACScenario.m_context->m_call_id = generateHexString(16);
+	UACScenario.m_context->m_from_tag = generateHexString(16);
+	UACScenario.m_context->m_via_branch = generateHexString(16);
+	while (NULL != node)
+	{
+		if (strcmp("send", node->Name()) == 0)
+		{
+			//cout << node->GetText() << "recv" << endl;
+			string* str = new string(node->GetText());
+			str->erase(0, 1);
+			SendSipRequest* sendsiprequest = new SendSipRequest((*str));
+
+			UACScenario.addAction(sendsiprequest);
+			cout << str;
+			sendsiprequest->m_scenario = &UACScenario;
+		}
+		if (strcmp("recv", node->Name()) == 0)
+		{
+			string response = node->Attribute("response");
+			ReceiveSipRequest* receivesiprequest = NULL;
+			if (response == "200")
+				receivesiprequest = new ReceiveSipRequest(OK);
+			else if (response == "180")
+				receivesiprequest = new ReceiveSipRequest(RINGNG);
+			if (receivesiprequest)
+			{
+				UACScenario.addAction(receivesiprequest);
+				receivesiprequest->m_scenario = &UACScenario;
+				cout << text << "recv" << endl;
+			}
+		}
+
+		if (strcmp("pause", node->Name()) == 0)
+		{
+			Pause* p = new Pause(12);
+			UACScenario.addAction(p);
+			cout << "pause" << endl;
+		}
+		node = node->NextSiblingElement();
+	}
+
+	UACScenario.run();
+}
+int main()
+{
+	xmlUAC();
 	//UASSenario();	
 	system("pause");
 	return 0;
