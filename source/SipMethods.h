@@ -1,7 +1,7 @@
 #include <string>
 #include <unordered_map>
 enum  ESipMethod {UNKNOWN, INVITE, RINGNG, ACK, BYE, OK};
-
+const std::string LEN_XML = "[len]";
 class SipMessage
 {
 public:
@@ -27,10 +27,19 @@ protected:
 	std::string m_service = "7887";
 	std::string m_transport = "UDP";
 	std::string m_remote_ip = "127.0.0.1";
-	std::string m_remote_port = "5060";
-	std::string m_local_port = "5061";
+	std::string m_remote_port = "5061";
+	std::string m_local_port = "5060";
 	std::string m_local_ip = "127.0.0.1";
-
+	std::string m_last_Via;
+	std::string m_last_From;
+	std::string m_last_To;
+	std::string m_call_number;
+	std::string m_last_Callid;
+	std::string m_last_CSeq;
+	std::string m_local_ip_type;
+	std::string m_media_port;
+	std::string m_media_ip_type;
+	std::string m_media_ip;
 	
 	static std::unordered_map<std::string, ESipMethod > m_map_string_sip_methods;
 	static std::unordered_map<ESipMethod, std::string> m_map_sipmethods_string;
@@ -57,6 +66,14 @@ public:
 	std::string getContentType() const;
 	std::string getAddititonalHeaders() const;
 	std::string getCallId() const;
+	std::string getlast_Via()const;
+	std::string getlast_From()const;
+	std::string getlast_To()const;
+	std::string getcall_number()const;
+	std::string getlast_Callid()const;
+	std::string getlast_CSeq()const;
+	
+
 private:
 	bool parse(const std::string& regex_message, std::list<std::string*> vect_strings, const std::string& str);
 	bool parse_header(const std::string& str);
@@ -87,8 +104,14 @@ public:
 	void setLocalIP(const std::string& local_ip);
 	void setLocalPort(const std::string& local_port);
 	void setRemotePort(const std::string& remote_port);
-
-
-
-
+	void setlast_Via(const std::string& m_last_Via);
+	void setlast_From(const std::string& m_last_From);
+	void setlast_To(const std::string& m_last_To);
+	void setcall_number(const std::string& m_call_number);
+	void setlast_Callid(const std::string& m_last_Callid);
+	void setlast_CSeq(const std::string& m_last_CSeq);
+	void setlocal_ip_type(const std::string& str);
+	void setmedia_port(const std::string& str);
+	void setmedia_ip_type(const std::string& str);
+	void setmedia_ip(const std::string& str);
 };

@@ -60,11 +60,20 @@ bool ReceiveSipRequest::execute()
 	while (message == "" || type != m_method)
 	{
 		message = "";
+		cout << "waiting for response" << m_method << endl;
 		message = m_scenario->getConnector()->receiveString();
-		request.getfrom(message);
 		printMessage(message, true);
+		request.getfrom(message);
+		
 		SipResponse response(message);
 		type = response.type();
+
+		m_scenario->getContext()->m_last_Via = response.getlast_Via();
+		m_scenario->getContext()->m_last_From = response.getlast_From();
+		m_scenario->getContext()->m_last_To = response.getlast_To();
+		
+		m_scenario->getContext()->m_last_Callid = response.getlast_Callid();
+		m_scenario->getContext()->m_last_CSeq = response.getlast_CSeq();
 	}
 	return true;
 }
@@ -93,6 +102,16 @@ bool SendSipRequest::execute()
 	request.setLocalIP(m_scenario->getContext()->m_local_ip);
 	request.setLocalPort(m_scenario->getContext()->m_local_port);
 	request.setRemotePort(m_scenario->getContext()->m_remote_port);
+	request.setlast_Via(m_scenario->getContext()->m_last_Via);
+	request.setlast_From(m_scenario->getContext()->m_last_From);
+	request.setlast_To(m_scenario->getContext()->m_last_To);
+	request.setcall_number(m_scenario->getContext()->m_call_number);
+	request.setlast_Callid(m_scenario->getContext()->m_last_Callid);
+	request.setlast_CSeq(m_scenario->getContext()->m_last_CSeq);
+	request.setlocal_ip_type(m_scenario->getContext()->m_local_ip_type);
+	request.setmedia_port(m_scenario->getContext()->m_media_port);
+	request.setmedia_ip_type(m_scenario->getContext()->m_media_ip_type);
+	request.setmedia_ip(m_scenario->getContext()->m_media_ip);
 	printMessage(request.toString(), false);
 	return m_scenario->getConnector()->sendString(request.toString());
 	

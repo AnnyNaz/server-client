@@ -61,9 +61,20 @@ public:
 	std::string m_service = "7887";
 	std::string m_transport = "UDP";
 	std::string m_remote_ip = "127.0.0.1";
-	std::string m_remote_port = "5060";
-	std::string m_local_port = "5061";
+	std::string m_remote_port = "5061";
+	std::string m_local_port = "5060";
 	std::string m_local_ip = "127.0.0.1";
+	std::string m_last_Via = "";
+	std::string m_last_From = "";
+	std::string m_last_To = "";
+	std::string m_call_number;
+	std::string m_last_Callid = "";
+	std::string m_last_CSeq = "";
+	std::string m_local_ip_type;
+	std::string m_media_port;
+	std::string m_media_ip_type;
+	std::string m_media_ip;
+
 };
 class SipScenario 
 {

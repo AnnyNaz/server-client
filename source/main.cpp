@@ -22,6 +22,12 @@ const int other_port = 5060;
 const int this_port = 5061;
 const int SERVICE = 7887;
 const string TRANSPORT = "UDP";
+const int length_of_code = 32;
+string local_ip_type = "4";
+string media_port = "12001";
+string media_ip_type = "4";
+string media_ip = "192.168.1.13";
+
 
 /*void UASSenario() 
 {
@@ -75,15 +81,15 @@ std::string generateHexString(int length)
 	return res;
 
 }
-void xmlUAS() 
-{
+void xmlUAS(const char* path)
+{	
 	string text, text1;
 	XMLDocument doc;
-	UDPClient* connector = new UDPClient(ip, this_port);
-	connector->connectTo(ip, other_port);
+	UDPClient* connector = new UDPClient(this_ip, this_port);
+	connector->connectTo(other_ip, other_port);
 	SipScenario UACScenario(connector);
-
-	if (doc.LoadFile("..//uas.xml") != 0)
+	
+	if (doc.LoadFile(path) != 0)
 	{
 		cout << "load xml file failed";
 		return;
@@ -91,9 +97,14 @@ void xmlUAS()
 	tinyxml2::XMLElement* rootNode = doc.FirstChildElement(ROOT_NODE);
 	tinyxml2::XMLElement* node = rootNode->FirstChildElement();
 	UACScenario.m_context = new SipContext();
-	UACScenario.m_context->m_call_id = generateHexString(16);
-	UACScenario.m_context->m_from_tag = generateHexString(16);
-	UACScenario.m_context->m_via_branch = generateHexString(16);
+	UACScenario.m_context->m_call_id = generateHexString(length_of_code);
+	UACScenario.m_context->m_from_tag = generateHexString(length_of_code);
+	UACScenario.m_context->m_via_branch = generateHexString(length_of_code);
+	UACScenario.m_context->m_call_number = generateHexString(length_of_code);
+	UACScenario.m_context->m_local_ip_type = local_ip_type;
+	UACScenario.m_context->m_media_port = media_port;
+	UACScenario.m_context->m_media_ip_type = media_ip_type;
+	UACScenario.m_context->m_media_ip = media_ip;
 	while (NULL != node)
 	{
 		if (strcmp("send", node->Name()) == 0)
@@ -109,17 +120,37 @@ void xmlUAS()
 		}
 		if (strcmp("recv", node->Name()) == 0)
 		{
-			string response = node->Attribute("response");
-			ReceiveSipRequest* receivesiprequest = NULL;
-			if (response == "200")
-				receivesiprequest = new ReceiveSipRequest(OK);
-			else if (response == "180")
-				receivesiprequest = new ReceiveSipRequest(RINGNG);
-			if (receivesiprequest)
+			if (node->Attribute("response"))
 			{
-				UACScenario.addAction(receivesiprequest);
-				receivesiprequest->m_scenario = &UACScenario;
-				cout << text << "recv" << endl;
+				string response = node->Attribute("response");
+				ReceiveSipRequest* receivesiprequest = NULL;
+				if (response == "200")
+					receivesiprequest = new ReceiveSipRequest(OK);
+				else if (response == "180")
+					receivesiprequest = new ReceiveSipRequest(RINGNG);
+				if (receivesiprequest)
+				{
+					UACScenario.addAction(receivesiprequest);
+					receivesiprequest->m_scenario = &UACScenario;
+					cout << text << "recv" << endl;
+				}
+			}
+			else if (node->Attribute("request")) 
+			{
+				string request = node->Attribute("request");
+				ReceiveSipRequest*  receivesiprequest = NULL;
+				if (request == "INVITE")
+					receivesiprequest = new ReceiveSipRequest(INVITE);
+				if (request == "OK")
+					receivesiprequest = new ReceiveSipRequest(OK);
+				else if (request == "ACK")
+					receivesiprequest = new ReceiveSipRequest(ACK);
+				if (receivesiprequest)
+				{
+					UACScenario.addAction(receivesiprequest);
+					receivesiprequest->m_scenario = &UACScenario;
+					cout << text << "recv" << endl;
+				}
 			}
 		}
 
@@ -138,21 +169,28 @@ void xmlUAC()
 {
 	string text, text1;
 	XMLDocument doc;
-	UDPClient* connector = new UDPClient(ip, this_port);
-	connector->connectTo(ip, other_port);
+	UDPServer* connector = new UDPServer(this_port);
+	//connector->connectTo(other_ip, other_port);
+	
 	SipScenario UACScenario(connector);
 
-	if (doc.LoadFile("..//uac.xml") != 0)
+	if (doc.LoadFile("..////scenarios/uac.xml") != 0)
 	{
 		cout << "load xml file failed";
 		return;
 	}
 	tinyxml2::XMLElement* rootNode = doc.FirstChildElement(ROOT_NODE);
+	assert(rootNode != 0);
 	tinyxml2::XMLElement* node = rootNode->FirstChildElement();
 	UACScenario.m_context = new SipContext();
-	UACScenario.m_context->m_call_id = generateHexString(16);
-	UACScenario.m_context->m_from_tag = generateHexString(16);
-	UACScenario.m_context->m_via_branch = generateHexString(16);
+	UACScenario.m_context->m_call_id = generateHexString(length_of_code);
+	UACScenario.m_context->m_from_tag = generateHexString(length_of_code);
+	UACScenario.m_context->m_via_branch = generateHexString(length_of_code);
+	UACScenario.m_context->m_call_number = generateHexString(length_of_code);
+	UACScenario.m_context->m_local_ip_type = local_ip_type;
+	UACScenario.m_context->m_media_port = media_port;
+	UACScenario.m_context->m_media_ip_type = media_ip_type;
+	UACScenario.m_context->m_media_ip = media_ip;
 	while (NULL != node)
 	{
 		if (strcmp("send", node->Name()) == 0)
@@ -168,12 +206,14 @@ void xmlUAC()
 		}
 		if (strcmp("recv", node->Name()) == 0)
 		{
-			string response = node->Attribute("response");
+			string response = node->Attribute("request");
 			ReceiveSipRequest* receivesiprequest = NULL;
-			if (response == "200")
+			if (response == "INVITE")
+				receivesiprequest = new ReceiveSipRequest(INVITE);
+			if (response == "OK")
 				receivesiprequest = new ReceiveSipRequest(OK);
-			else if (response == "180")
-				receivesiprequest = new ReceiveSipRequest(RINGNG);
+			else if (response == "ACK")
+				receivesiprequest = new ReceiveSipRequest(ACK);
 			if (receivesiprequest)
 			{
 				UACScenario.addAction(receivesiprequest);
@@ -195,7 +235,8 @@ void xmlUAC()
 }
 int main()
 {
-	xmlUAC();
+	const char* path = "..\\source\\scenarios\\uas.xml";
+	xmlUAS(path);
 	//UASSenario();	
 	system("pause");
 	return 0;
