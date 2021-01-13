@@ -1,6 +1,6 @@
 #include <string>
 #include <unordered_map>
-enum  ESipMethod {UNKNOWN, INVITE, RINGNG, ACK, BYE, OK};
+enum  ESipMethod {UNKNOWN, INVITE, RINGNG, ACK, BYE, OK, TRY, SESSION_PROGRESS};
 const std::string LEN_XML = "[len]";
 class SipMessage
 {
@@ -24,12 +24,13 @@ protected:
 	std::string m_sdp_len = "0";
 	std::string m_sdp = "";
 	std::string m_contact = "";
-	std::string m_service = "7887";
-	std::string m_transport = "UDP";
-	std::string m_remote_ip = "127.0.0.1";
-	std::string m_remote_port = "5061";
-	std::string m_local_port = "5060";
-	std::string m_local_ip = "127.0.0.1";
+	std::string m_service = "";
+	std::string m_transport = "";
+	std::string m_remote_ip;
+	std::string m_remote_port;
+	std::string m_rtcp_port;
+	std::string m_local_port;
+	std::string m_local_ip;
 	std::string m_last_Via;
 	std::string m_last_From;
 	std::string m_last_To;
@@ -85,7 +86,7 @@ public:
 	SipRequest(const std::string& temp);
 	std::string m_template = "";
 	SipRequest operator= (const SipResponse& rhs);
-	void getfrom( const SipResponse& rhs);
+	void getfrom(const SipResponse& rhs);
 	void setType(ESipMethod m);
 	std::string toString();
 	void setUserAgent(const std::string& useragent);//??
@@ -112,6 +113,8 @@ public:
 	void setlast_CSeq(const std::string& m_last_CSeq);
 	void setlocal_ip_type(const std::string& str);
 	void setmedia_port(const std::string& str);
-	void setmedia_ip_type(const std::string& str);
 	void setmedia_ip(const std::string& str);
+	void set_type(const std::string& str);
+	void setrtcp_port(const std::string& str);
+	void setmedia_ip_type(const std::string& str);
 };

@@ -15,15 +15,15 @@ void printMessage(string str, bool isIn)
 	boost::split(result, str, boost::is_any_of("\n"));
 	if (isIn)
 	{
-		cout << "<-- ";
+		cout << "<-- " << endl;
 	}
 	else
 	{
-		cout << "-->";
+		cout << "-->" << endl;
 	}
 	for (auto i : result)
 	{
-		cout << "\t" << i << endl;
+		cout <<  i << endl;
 	}
 }
 
@@ -60,14 +60,14 @@ bool ReceiveSipRequest::execute()
 	while (message == "" || type != m_method)
 	{
 		message = "";
-		cout << "waiting for response" << m_method << endl;
+		//cout << "waiting for response" << m_method << endl;
 		message = m_scenario->getConnector()->receiveString();
 		printMessage(message, true);
 		request.getfrom(message);
 		
 		SipResponse response(message);
 		type = response.type();
-
+		m_scenario->getContext()->m_to_tag= response.getToTag();
 		m_scenario->getContext()->m_last_Via = response.getlast_Via();
 		m_scenario->getContext()->m_last_From = response.getlast_From();
 		m_scenario->getContext()->m_last_To = response.getlast_To();
@@ -110,6 +110,7 @@ bool SendSipRequest::execute()
 	request.setlast_CSeq(m_scenario->getContext()->m_last_CSeq);
 	request.setlocal_ip_type(m_scenario->getContext()->m_local_ip_type);
 	request.setmedia_port(m_scenario->getContext()->m_media_port);
+	request.setrtcp_port(m_scenario->getContext()->m_rtcp_port);
 	request.setmedia_ip_type(m_scenario->getContext()->m_media_ip_type);
 	request.setmedia_ip(m_scenario->getContext()->m_media_ip);
 	printMessage(request.toString(), false);
@@ -127,48 +128,27 @@ SendSipRequest::SendSipRequest(const string & m) : m_template(m)
 ReceiveSipRequest::ReceiveSipRequest(ESipMethod method) : m_method(method)
 {
 }
-/*
-string inviteMessage(string tem, string transport, int service , string from_name, string ip, int this_port, string other_ip, int other_port )
+bool SipInitContext::execute()
 {
-	int id_length = 12;
-	SipRequest invite(tem);
-	string via = " SIP/2.0/" + transport + " " + ip + ":" + to_string(this_port) + ";branch=" + generateHexString(id_length);
-
-	invite.setVia(via);
-	invite.setTo("MCU", "sip:" + to_string(service) + "@" + other_ip + ":" + to_string(other_port), "");
-	invite.setFrom(from_name, "sip:" + from_name + "@" + ip + ":" + to_string(this_port), generateHexString(id_length));
-	invite.setCallId(generateHexString(10));
-	invite.setContact("sip:" + from_name + "@" + ip + ":" + to_string(this_port) + ";transport=udp");
-	invite.setType(INVITE);
-	invite.setContentType(" 8263 INVITE");
-	string sdp = "v=0\n\
-o=- 3818317038 3818317038 IN IP4 192.168.0.106\n\
-s=pjmedia\n\
-b=AS:84\n\
-t=0 0\n\
-a=X-nat:0\n\
-m=audio 4002 RTP/AVP 8 0 101\n\
-c=IN IP4 192.168.0.106\n\
-b=TIAS:64000\n\
-a=rtcp:4003 IN IP4 192.168.0.106\n\
-a=sendrecv\n\
-a=rtpmap:8 PCMA/8000\n\
-a=rtpmap:0 PCMU/8000\n\
-a=rtpmap:101 telephone-event/8000\n\
-a=fmtp:101 0-16\n\
-a=ssrc:1492521541 cname:48da188672ef56db";
-	invite.setSDP(sdp, to_string(sdp.size()));
-	//return invite.toString();
-	string res = "";
-	string line;
-	ifstream file("C:\\Users\\hanna.nazarkevych\\source\\repos\\server\\source\\invite.txt");
-	if (file.is_open())
-	{
-		while (getline(file, line))
-		{
-			res = res + line + "\n";
-		}
-		file.close();
-	}
-	return res;
-}*/
+	m_scenario->getContext()->m_call_id = m_helper.generateHexString(m_length_of_code);
+	m_scenario->getContext()->m_from_tag = m_helper.generateHexString(m_length_of_code);
+	m_scenario->getContext()->m_via_branch = m_helper.generateHexString(m_length_of_code);
+	m_scenario->getContext()->m_call_number = m_helper.generateHexString(m_length_of_code);
+	return true;
+}
+SipInitContext::SipInitContext(SipScenario* sc, string this_ip, int this_port, string other_ip, int other_port, string local_ip_type, string media_ip_type,string media_ip, string media_port, string rtcp_port, string transport, string service, string name)
+{
+	m_scenario = sc;
+	m_scenario->getContext()->m_local_ip_type = local_ip_type;
+	m_scenario->getContext()->m_media_port = media_port;
+	m_scenario->getContext()->m_media_ip_type = media_ip_type;
+	m_scenario->getContext()->m_local_ip = this_ip;
+	m_scenario->getContext()->m_remote_ip = other_ip;
+	m_scenario->getContext()->m_media_ip = media_ip;
+	m_scenario->getContext()->m_rtcp_port = rtcp_port;
+	m_scenario->getContext()->m_remote_port = to_string(other_port);
+	m_scenario->getContext()->m_local_port = to_string(this_port);
+	m_scenario->getContext()->m_transport = transport;
+	m_scenario->getContext()->m_service = service;
+	m_scenario->getContext()->m_from = name;
+};

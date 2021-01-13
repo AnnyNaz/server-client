@@ -32,12 +32,17 @@ SipMessage::SipMessage()
 	SipMessage::m_map_sipmethods_string[ACK] = "ACK";
 	SipMessage::m_map_sipmethods_string[BYE] = "BYE";
 	SipMessage::m_map_sipmethods_string[OK] = "200 OK";
+	SipMessage::m_map_sipmethods_string[TRY] = "100 Trying";
+	SipMessage::m_map_sipmethods_string[SESSION_PROGRESS] = "183 Session Progress";
+
 	SipMessage::m_map_string_sip_methods["UNKNOWN"] = UNKNOWN;
 	SipMessage::m_map_string_sip_methods["INVITE"] = INVITE;
 	SipMessage::m_map_string_sip_methods["180 Ringing"] = RINGNG;
 	SipMessage::m_map_string_sip_methods["ACK"] = ACK;
 	SipMessage::m_map_string_sip_methods["BYE"] = BYE;
 	SipMessage::m_map_string_sip_methods["200 OK"] = OK;
+	SipMessage::m_map_string_sip_methods["100 Trying"] = TRY;
+	SipMessage::m_map_string_sip_methods["183 Session Progress"] = SESSION_PROGRESS;
 }
 	bool SipMessage::operator==(const SipMessage& rhs)
 	{
@@ -71,9 +76,7 @@ SipMessage::SipMessage()
 		{
 			replace_all_mute(res, it.first, it.second);
 		}
-		int found_len = res.find(LEN_XML);
-		int len = res.size() - found_len - LEN_XML.size();
-		replace_all_mute(res, LEN_XML, to_string(len));
+		
 		return res;
 	}
 	std::string SipRequest::toString()
@@ -100,9 +103,15 @@ SipMessage::SipMessage()
 		map["[last_CSeq:]"] = m_last_CSeq;
 		map["[local_ip_type]"] = m_local_ip_type;
 		map["[media_port]"] = m_media_port;
+		map["[rtcp_port]"] = m_rtcp_port;
 		map["[media_ip_type]"] = m_media_ip_type;
 		map["[media_ip]"] = m_media_ip;
+		
 		result = change(m_template, map);
+		replace_all_mute(result, "\n", "\r\n");
+		int found_len = result.find(LEN_XML);
+		int len = result.size() - found_len -LEN_XML.size() - 3;
+		replace_all_mute(result, LEN_XML, to_string(len));
 		return result;
 			
 	}
@@ -377,8 +386,10 @@ SipMessage::SipMessage()
 	void SipRequest::setRemotePort(const std::string& remote_port) { m_remote_port = remote_port; }
 	void SipRequest::setlocal_ip_type(const std::string& str) { m_local_ip_type = str; }
 	void SipRequest::setmedia_port(const std::string& str) { m_media_port = str; }
-	void SipRequest::setmedia_ip_type(const std::string& str) { m_media_ip_type = str; }
+	void SipRequest::set_type(const std::string& str) { m_media_ip_type = str; }
 	void SipRequest::setmedia_ip(const std::string& str) { m_media_ip = str; }
+	void SipRequest::setrtcp_port(const std::string& str) { m_rtcp_port = str; }
+	void SipRequest::setmedia_ip_type(const std::string& str) { m_media_ip_type = str; }
 	std::string SipResponse::getlast_Via()const
 	{
 		return m_last_Via;

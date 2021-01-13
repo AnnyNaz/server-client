@@ -1,7 +1,8 @@
 #include <string>
 #include <vector>
-#include"SipMethods.h"
+#include "SipMethods.h"
 #include "Networking.h"
+#include "SipHelper.h"
 class SipScenario;
 class SipAction
 {
@@ -20,6 +21,17 @@ public:
 private:
 	SipResponse* m_sip_response;
 	ESipMethod m_method;
+};
+class SipInitContext : public SipAction
+{
+public:
+	SipInitContext(SipScenario* sc, std::string this_ip, int this_port, std::string other_ip, int other_port, std::string local_ip_type, std::string 
+		_type, std::string 
+		, std::string media_port, std::string rtcp_port, std::string transport, std::string service, std::string name);
+	bool execute() override;
+private:
+	SipHelper m_helper;
+	const int m_length_of_code = 16;
 };
 class Pause:public SipAction
 {
@@ -58,12 +70,12 @@ public:
 	std::string m_sdp_len = "0";
 	std::string m_sdp = "";
 	std::string m_contact = "";
-	std::string m_service = "7887";
-	std::string m_transport = "UDP";
-	std::string m_remote_ip = "127.0.0.1";
-	std::string m_remote_port = "5061";
-	std::string m_local_port = "5060";
-	std::string m_local_ip = "127.0.0.1";
+	std::string m_service = "";
+	std::string m_transport = "";
+	std::string m_remote_ip = "";
+	std::string m_remote_port = "";
+	std::string m_local_port = "";
+	std::string m_local_ip = "";
 	std::string m_last_Via = "";
 	std::string m_last_From = "";
 	std::string m_last_To = "";
@@ -72,6 +84,7 @@ public:
 	std::string m_last_CSeq = "";
 	std::string m_local_ip_type;
 	std::string m_media_port;
+	std::string m_rtcp_port = "";
 	std::string m_media_ip_type;
 	std::string m_media_ip;
 
@@ -89,4 +102,3 @@ public:
 protected:
 	UdpBase* m_connector;
 };
-std::string inviteMessage(std::string transport, int service, std::string from_name, std::string ip, int this_port, std::string other_ip, int other_port);
