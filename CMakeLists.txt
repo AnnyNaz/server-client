@@ -13,7 +13,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 set(SOURCE
-	${CMAKE_SOURCE_DIR}/source/utilities.cpp
+	
 	${CMAKE_SOURCE_DIR}/source/UdpServer.cpp
 	${CMAKE_SOURCE_DIR}/source/UdpServer.h
 	${CMAKE_SOURCE_DIR}/source/UdpClient.cpp
@@ -26,6 +26,10 @@ set(SOURCE
 	${CMAKE_SOURCE_DIR}/source/SipHelper.cpp
 	${CMAKE_SOURCE_DIR}/source/SipScenario.h
 	${CMAKE_SOURCE_DIR}/source/SipScenario.cpp
+	${CMAKE_SOURCE_DIR}/source/SipReadConfig.h
+	${CMAKE_SOURCE_DIR}/source/SipReadConfig.cpp
+	${CMAKE_SOURCE_DIR}/source/SipTesterConfig.h
+	${CMAKE_SOURCE_DIR}/source/SipTesterConfig.cpp
 	${CMAKE_SOURCE_DIR}/source/tinyxml2/tinyxml2.h
 	${CMAKE_SOURCE_DIR}/source/tinyxml2/tinyxml2.cpp
 	${CMAKE_SOURCE_DIR}/source/XMLParser.h
