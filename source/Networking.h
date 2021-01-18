@@ -4,8 +4,8 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
-using boost::asio::ip::udp;
-
+using namespace boost::asio;
+using ip::udp;
 
 
 

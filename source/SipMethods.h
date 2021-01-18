@@ -1,3 +1,6 @@
+#ifndef SIPMETHODS_H
+#define SIPMETHODS_H
+
 #include <string>
 #include <unordered_map>
 enum  ESipMethod {UNKNOWN, INVITE, RINGNG, ACK, BYE, OK, TRY, SESSION_PROGRESS};
@@ -118,3 +121,5 @@ public:
 	void setrtcp_port(const std::string& str);
 	void setmedia_ip_type(const std::string& str);
 };
+
+#endif

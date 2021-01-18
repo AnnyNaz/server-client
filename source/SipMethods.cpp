@@ -122,7 +122,6 @@ SipMessage::SipMessage()
 	bool SipResponse::parse(const string& regex_message, list<std::string*> vect_strings, const string& str)
 	{
 		std::regex message(regex_message);
-		//std::cout <<"\n\nMESSAGE__\n\n" <<regex_message << "\n\nMESSAGE__\n\n" << str << endl;
 		std::smatch matched;
 		if (regex_match(str, matched, message))
 		{
